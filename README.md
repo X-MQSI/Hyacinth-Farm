@@ -406,8 +406,8 @@ http.end();
 
 ### 🎨 Logo 配置
 
-- 页面标题栏 logo：将 `logo.png` 放在项目根目录
-- 网页图标（favicon）：将 `logo.ico` 放在项目根目录
+- 页面标题栏 logo：将 `logo.png` 放在项目public目录
+- 网页图标（favicon）：将 `logo.ico` 放在项目public目录
 - 如果文件不存在，logo 会自动隐藏，不影响功能
 
 ---
