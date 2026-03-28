@@ -6,16 +6,49 @@
 
 ## 快速启动
 
+### 方式1：直接运行（开发/测试）
+
 ```bash
 npm install
-node server.js
+npm start
 ```
+
+### 方式2：使用 PM2 部署（生产环境推荐）
+
+```bash
+# 安装依赖（包含 PM2）
+npm install
+
+# 启动服务
+npm run pm2:start
+
+# 查看运行状态
+npm run pm2:status
+
+# 查看日志
+npm run pm2:logs
+
+# 重启服务
+npm run pm2:restart
+
+# 停止服务
+npm run pm2:stop
+
+# 删除服务
+npm run pm2:delete
+```
+
+**PM2 优势：**
+- 自动重启（崩溃恢复）
+- 日志管理
+- 进程监控
+- 开机自启动（需配置：`npx pm2 startup` 和 `npx pm2 save`）
 
 服务器启动后会自动生成一个32位的 Session Key 并显示在控制台中。
 
 浏览器访问 `http://localhost:3000`，网页可直接访问，无需认证。
 
-> 默认端口为 3000，可在server.js中修改，搜索 `const PORT = parseInt(process.env.PORT) || 3000;` 将其中的3000端口修改为想要实际部署使用的端口
+> 默认端口为 3000，可在 server.js 或 ecosystem.config.js 中修改
 
 ---
 
@@ -45,12 +78,14 @@ cat .session_key
 ```
 hyacinth-farm/
 ├── server.js          主服务文件（后端 + 静态资源）
+├── ecosystem.config.js PM2 配置文件
 ├── .session_key       Session Key 文件（自动生成，不提交到 Git）
 ├── package.json
 ├── README.md
 ├── public/
 │   └── index.html     前端单页应用
 ├── pic/               图片存储目录（自动创建）
+├── logs/              PM2 日志目录（自动创建）
 ├── sensor.db          传感器数据库（SQLite，自动创建）
 ├── sensor.log         传感器数据文本日志（自动创建）
 ├── event.log          设备事件日志（自动创建）
@@ -396,6 +431,49 @@ String getISO8601() {
 | express | HTTP 服务器框架             |
 | sql.js  | SQLite 纯 JS 实现（无需原生编译） |
 | cors    | 跨域支持                   |
+
+**可选依赖：**
+- pm2 - 进程管理器（生产环境推荐）
+
+---
+
+## 生产环境部署建议
+
+### 使用 PM2 管理进程
+
+1. **安装依赖（包含 PM2）**
+   ```bash
+   npm install
+   ```
+
+2. **启动服务**
+   ```bash
+   npm run pm2:start
+   ```
+
+3. **配置开机自启动**
+   ```bash
+   npx pm2 startup
+   npx pm2 save
+   ```
+
+4. **监控和管理**
+   ```bash
+   npm run pm2:status      # 查看状态
+   npm run pm2:logs        # 查看日志
+   npx pm2 monit           # 实时监控
+   npm run pm2:restart     # 重启服务
+   npm run pm2:stop        # 停止服务
+   npm run pm2:delete      # 删除服务
+   ```
+
+### PM2 配置说明
+
+项目包含 `ecosystem.config.js` 配置文件，可自定义：
+- 实例数量（默认1个）
+- 内存限制（默认500M）
+- 环境变量（端口等）
+- 日志路径（./logs/）
 
 ---
 

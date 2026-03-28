@@ -9,6 +9,10 @@ node_modules/
 
 # Log files
 *.log
+logs/
+
+# PM2 files
+.pm2/
 
 # Image uploads
 pic/
