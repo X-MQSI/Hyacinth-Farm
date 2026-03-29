@@ -559,30 +559,65 @@ label.ctrl-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
         <span class="badge-new" id="badge-data">已更新</span>
       </div>
       <div class="sensor-grid">
-        <div class="s-tile" id="tile-temp">
-          <div class="s-label">环境温度</div>
-          <div><span class="s-val" id="v-temp">--</span><span class="s-unit">°C</span></div>
-          <div class="s-time" id="t-temp"></div>
+        <div class="s-tile" id="tile-soil-a">
+          <div class="s-label">土壤湿度A</div>
+          <div><span class="s-val" id="v-soil-a">--</span><span class="s-unit">%</span></div>
+          <div class="s-time" id="t-soil-a"></div>
         </div>
-        <div class="s-tile" id="tile-soil">
-          <div class="s-label">土壤湿度</div>
-          <div><span class="s-val" id="v-soil">--</span><span class="s-unit">%</span></div>
-          <div class="s-time" id="t-soil"></div>
+        <div class="s-tile" id="tile-soil-b">
+          <div class="s-label">土壤湿度B</div>
+          <div><span class="s-val" id="v-soil-b">--</span><span class="s-unit">%</span></div>
+          <div class="s-time" id="t-soil-b"></div>
         </div>
         <div class="s-tile" id="tile-light">
           <div class="s-label">光照强度</div>
           <div><span class="s-val" id="v-light">--</span><span class="s-unit">lx</span></div>
           <div class="s-time" id="t-light"></div>
         </div>
+        <div class="s-tile" id="tile-temp">
+          <div class="s-label">环境温度</div>
+          <div><span class="s-val" id="v-temp">--</span><span class="s-unit">°C</span></div>
+          <div class="s-time" id="t-temp"></div>
+        </div>
+        <div class="s-tile" id="tile-hum">
+          <div class="s-label">环境湿度</div>
+          <div><span class="s-val" id="v-hum">--</span><span class="s-unit">%</span></div>
+          <div class="s-time" id="t-hum"></div>
+        </div>
         <div class="s-tile" id="tile-pres">
-          <div class="s-label">大气压强</div>
+          <div class="s-label">环境气压</div>
           <div><span class="s-val" id="v-pres">--</span><span class="s-unit">kPa</span></div>
           <div class="s-time" id="t-pres"></div>
         </div>
-        <div class="s-tile" id="tile-volt">
+        <div class="s-tile" id="tile-solar-v">
+          <div class="s-label">太阳能电压</div>
+          <div><span class="s-val" id="v-solar-v">--</span><span class="s-unit">V</span></div>
+          <div class="s-time" id="t-solar-v"></div>
+        </div>
+        <div class="s-tile" id="tile-batt-v">
           <div class="s-label">电池电压</div>
-          <div><span class="s-val" id="v-volt">--</span><span class="s-unit">V</span></div>
-          <div class="s-time" id="t-volt"></div>
+          <div><span class="s-val" id="v-batt-v">--</span><span class="s-unit">V</span></div>
+          <div class="s-time" id="t-batt-v"></div>
+        </div>
+        <div class="s-tile" id="tile-supply-v">
+          <div class="s-label">供电电压</div>
+          <div><span class="s-val" id="v-supply-v">--</span><span class="s-unit">V</span></div>
+          <div class="s-time" id="t-supply-v"></div>
+        </div>
+        <div class="s-tile" id="tile-solar-c">
+          <div class="s-label">太阳能电流</div>
+          <div><span class="s-val" id="v-solar-c">--</span><span class="s-unit">mA</span></div>
+          <div class="s-time" id="t-solar-c"></div>
+        </div>
+        <div class="s-tile" id="tile-batt-c">
+          <div class="s-label">电池电流</div>
+          <div><span class="s-val" id="v-batt-c">--</span><span class="s-unit">mA</span></div>
+          <div class="s-time" id="t-batt-c"></div>
+        </div>
+        <div class="s-tile" id="tile-supply-c">
+          <div class="s-label">供电电流</div>
+          <div><span class="s-val" id="v-supply-c">--</span><span class="s-unit">mA</span></div>
+          <div class="s-time" id="t-supply-c"></div>
         </div>
       </div>
       <div class="data-update-ts" id="dataUpdateTs"></div>
@@ -642,24 +677,28 @@ label.ctrl-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
 
   <div class="charts-grid">
     <div class="chart-card">
-      <h4>🌡 环境温度 (°C)</h4>
-      <div class="chart-wrap"><canvas id="cTemp"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h4>🔋 电池电压 (V)</h4>
-      <div class="chart-wrap"><canvas id="cVolt"></canvas></div>
+      <h4>🌱 土壤湿度 A & B (%)</h4>
+      <div class="chart-wrap"><canvas id="cSoil"></canvas></div>
     </div>
     <div class="chart-card">
       <h4>☀️ 光照强度 (lx)</h4>
       <div class="chart-wrap"><canvas id="cLight"></canvas></div>
     </div>
     <div class="chart-card">
-      <h4>🌪 大气压强 (kPa)</h4>
+      <h4>🌡💧 环境温度 & 湿度</h4>
+      <div class="chart-wrap"><canvas id="cEnv"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h4>🌬 环境气压 (kPa)</h4>
       <div class="chart-wrap"><canvas id="cPres"></canvas></div>
     </div>
     <div class="chart-card">
-      <h4>🌱 土壤湿度 (%)</h4>
-      <div class="chart-wrap"><canvas id="cSoil"></canvas></div>
+      <h4>⚡ 电压监控 (V)</h4>
+      <div class="chart-wrap"><canvas id="cVoltage"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h4>🔌 电流监控 (mA)</h4>
+      <div class="chart-wrap"><canvas id="cCurrent"></canvas></div>
     </div>
   </div>
 </div>
@@ -933,11 +972,18 @@ function setSensor(id, tileId, val, unit, ts) {
 }
 
 function updateSensors(d) {
-  setSensor('v-temp',  'tile-temp',  d.temperature,   '°C',  d.timestamp);
-  setSensor('v-soil',  'tile-soil',  d.soil_moisture, '%',   d.timestamp);
-  setSensor('v-light', 'tile-light', d.light,         'lx',  d.timestamp);
-  setSensor('v-pres',  'tile-pres',  d.pressure,      'kPa', d.timestamp);
-  setSensor('v-volt',  'tile-volt',  d.voltage,       'V',   d.timestamp);
+  setSensor('v-soil-a',  'tile-soil-a',  d.soil_moisture_a, '%',  d.timestamp);
+  setSensor('v-soil-b',  'tile-soil-b',  d.soil_moisture_b, '%',  d.timestamp);
+  setSensor('v-light',   'tile-light',   d.light,           'lx', d.timestamp);
+  setSensor('v-temp',    'tile-temp',    d.temperature,     '°C', d.timestamp);
+  setSensor('v-hum',     'tile-hum',     d.humidity,        '%',  d.timestamp);
+  setSensor('v-pres',    'tile-pres',    d.pressure,        'kPa', d.timestamp);
+  setSensor('v-solar-v', 'tile-solar-v', d.solar_voltage,   'V',  d.timestamp);
+  setSensor('v-batt-v',  'tile-batt-v',  d.battery_voltage, 'V',  d.timestamp);
+  setSensor('v-supply-v','tile-supply-v',d.supply_voltage,  'V',  d.timestamp);
+  setSensor('v-solar-c', 'tile-solar-c', d.solar_current,   'mA', d.timestamp);
+  setSensor('v-batt-c',  'tile-batt-c',  d.battery_current, 'mA', d.timestamp);
+  setSensor('v-supply-c','tile-supply-c',d.supply_current,  'mA', d.timestamp);
   $('dataUpdateTs').textContent = '更新时间: ' + fmtTs(d.timestamp);
 }
 
@@ -1173,19 +1219,21 @@ document.addEventListener('keydown', e => {
 
 // ── Charts ────────────────────────────────────────────────────────────
 const CHART_CFG = [
-  { id: 'cTemp', key: 'temperature', color: '#f87171', unit: '°C', min: -20, max: 90 },
-  { id: 'cVolt', key: 'voltage', color: '#fbbf24', unit: 'V', min: 0, max: 5 },
+  { id: 'cSoil', keys: ['soil_moisture_a', 'soil_moisture_b'], colors: ['#4ade80', '#22c55e'], labels: ['土壤湿度A', '土壤湿度B'], unit: '%', min: 0, max: 110, dual: true },
   { id: 'cLight', key: 'light', color: '#60a5fa', unit: 'lx', min: 0, max: 2000 },
+  { id: 'cEnv', keys: ['temperature', 'humidity'], colors: ['#f87171', '#60a5fa'], labels: ['环境温度', '环境湿度'], units: ['°C', '%'], mins: [-20, 0], maxs: [90, 110], dual: true },
   { id: 'cPres', key: 'pressure', color: '#a78bfa', unit: 'kPa', min: 50, max: 150 },
-  { id: 'cSoil', key: 'soil_moisture', color: '#4ade80', unit: '%', min: 0, max: 110 },
+  { id: 'cVoltage', keys: ['solar_voltage', 'battery_voltage', 'supply_voltage'], colors: ['#fbbf24', '#f87171', '#60a5fa'], labels: ['太阳能电压', '电池电压', '供电电压'], unit: 'V', min: 0, max: 15, multi: true },
+  { id: 'cCurrent', keys: ['solar_current', 'battery_current', 'supply_current'], colors: ['#fbbf24', '#f87171', '#60a5fa'], labels: ['太阳能电流', '电池电流', '供电电流'], unit: 'mA', min: -500, max: 1500, multi: true },
 ];
 const charts = {};
 const chartDataBuffer = {
-  cTemp: [],
-  cVolt: [],
+  cSoil: { soil_moisture_a: [], soil_moisture_b: [] },
   cLight: [],
+  cEnv: { temperature: [], humidity: [] },
   cPres: [],
-  cSoil: []
+  cVoltage: { solar_voltage: [], battery_voltage: [], supply_voltage: [] },
+  cCurrent: { solar_current: [], battery_current: [], supply_current: [] }
 };
 const MAX_CHART_POINTS = 100;
 
@@ -1251,14 +1299,53 @@ function initCharts() {
 
 function updateChartsRealtime(data) {
   CHART_CFG.forEach(cfg => {
-    const { id, key } = cfg;
-    if (data[key] !== null && data[key] !== undefined) {
-      const newPoint = { x: data.timestamp, y: data[key] };
-      mergeChartData(chartDataBuffer[id], newPoint);
+    const { id, dual, multi } = cfg;
+    
+    if (dual) {
+      // 双轴图表
+      const { keys } = cfg;
+      keys.forEach((key, idx) => {
+        if (data[key] !== null && data[key] !== undefined) {
+          const newPoint = { x: data.timestamp, y: data[key] };
+          mergeChartData(chartDataBuffer[id][key], newPoint);
+          
+          if (chartsReady && charts[id]) {
+            charts[id].data.datasets[idx].data = chartDataBuffer[id][key];
+          }
+        }
+      });
       
       if (chartsReady && charts[id]) {
-        charts[id].data.datasets[0].data = chartDataBuffer[id];
         charts[id].update('none');
+      }
+    } else if (multi) {
+      // 多线图表
+      const { keys } = cfg;
+      keys.forEach((key, idx) => {
+        if (data[key] !== null && data[key] !== undefined) {
+          const newPoint = { x: data.timestamp, y: data[key] };
+          mergeChartData(chartDataBuffer[id][key], newPoint);
+          
+          if (chartsReady && charts[id]) {
+            charts[id].data.datasets[idx].data = chartDataBuffer[id][key];
+          }
+        }
+      });
+      
+      if (chartsReady && charts[id]) {
+        charts[id].update('none');
+      }
+    } else {
+      // 单轴图表
+      const { key } = cfg;
+      if (data[key] !== null && data[key] !== undefined) {
+        const newPoint = { x: data.timestamp, y: data[key] };
+        mergeChartData(chartDataBuffer[id], newPoint);
+        
+        if (chartsReady && charts[id]) {
+          charts[id].data.datasets[0].data = chartDataBuffer[id];
+          charts[id].update('none');
+        }
       }
     }
   });
@@ -1294,17 +1381,29 @@ function exportCSV() {
       }
       
       // 生成CSV内容
-      const headers = ['时间戳', '环境温度(°C)', '土壤湿度(%)', '光照强度(lx)', '大气压强(kPa)', '电池电压(V)'];
+      const headers = [
+        '时间戳', '土壤湿度A(%)', '土壤湿度B(%)', '光照强度(lx)', 
+        '环境温度(°C)', '环境湿度(%)', '环境气压(kPa)',
+        '太阳能电压(V)', '电池电压(V)', '供电电压(V)',
+        '太阳能电流(mA)', '电池电流(mA)', '供电电流(mA)'
+      ];
       const csvRows = [headers.join(',')];
       
       rows.reverse().forEach(row => {
         const values = [
           row.timestamp || '',
-          row.temperature !== null && row.temperature !== undefined ? row.temperature : '',
-          row.soil_moisture !== null && row.soil_moisture !== undefined ? row.soil_moisture : '',
+          row.soil_moisture_a !== null && row.soil_moisture_a !== undefined ? row.soil_moisture_a : '',
+          row.soil_moisture_b !== null && row.soil_moisture_b !== undefined ? row.soil_moisture_b : '',
           row.light !== null && row.light !== undefined ? row.light : '',
+          row.temperature !== null && row.temperature !== undefined ? row.temperature : '',
+          row.humidity !== null && row.humidity !== undefined ? row.humidity : '',
           row.pressure !== null && row.pressure !== undefined ? row.pressure : '',
-          row.voltage !== null && row.voltage !== undefined ? row.voltage : ''
+          row.solar_voltage !== null && row.solar_voltage !== undefined ? row.solar_voltage : '',
+          row.battery_voltage !== null && row.battery_voltage !== undefined ? row.battery_voltage : '',
+          row.supply_voltage !== null && row.supply_voltage !== undefined ? row.supply_voltage : '',
+          row.solar_current !== null && row.solar_current !== undefined ? row.solar_current : '',
+          row.battery_current !== null && row.battery_current !== undefined ? row.battery_current : '',
+          row.supply_current !== null && row.supply_current !== undefined ? row.supply_current : ''
         ];
         csvRows.push(values.join(','));
       });
@@ -1336,16 +1435,55 @@ async function loadCharts() {
     const sorted = rows.slice().reverse();
     
     CHART_CFG.forEach(cfg => {
-      const { id, key } = cfg;
-      const data = sorted
-        .filter(r => r[key] !== null && r[key] !== undefined)
-        .map(r => ({ x: r.timestamp, y: r[key] }));
+      const { id, dual, multi } = cfg;
       
-      chartDataBuffer[id] = data.slice(-MAX_CHART_POINTS);
-      
-      if (charts[id]) {
-        charts[id].data.datasets[0].data = chartDataBuffer[id];
-        charts[id].update('active');
+      if (dual) {
+        // 双轴图表
+        const { keys } = cfg;
+        chartDataBuffer[id][keys[0]] = sorted
+          .filter(r => r[keys[0]] !== null && r[keys[0]] !== undefined)
+          .map(r => ({ x: r.timestamp, y: r[keys[0]] }))
+          .slice(-MAX_CHART_POINTS);
+        chartDataBuffer[id][keys[1]] = sorted
+          .filter(r => r[keys[1]] !== null && r[keys[1]] !== undefined)
+          .map(r => ({ x: r.timestamp, y: r[keys[1]] }))
+          .slice(-MAX_CHART_POINTS);
+        
+        if (charts[id]) {
+          charts[id].data.datasets[0].data = chartDataBuffer[id][keys[0]];
+          charts[id].data.datasets[1].data = chartDataBuffer[id][keys[1]];
+          charts[id].update('active');
+        }
+      } else if (multi) {
+        // 多线图表
+        const { keys } = cfg;
+        keys.forEach((key, idx) => {
+          chartDataBuffer[id][key] = sorted
+            .filter(r => r[key] !== null && r[key] !== undefined)
+            .map(r => ({ x: r.timestamp, y: r[key] }))
+            .slice(-MAX_CHART_POINTS);
+          
+          if (charts[id]) {
+            charts[id].data.datasets[idx].data = chartDataBuffer[id][key];
+          }
+        });
+        
+        if (charts[id]) {
+          charts[id].update('active');
+        }
+      } else {
+        // 单轴图表
+        const { key } = cfg;
+        const data = sorted
+          .filter(r => r[key] !== null && r[key] !== undefined)
+          .map(r => ({ x: r.timestamp, y: r[key] }));
+        
+        chartDataBuffer[id] = data.slice(-MAX_CHART_POINTS);
+        
+        if (charts[id]) {
+          charts[id].data.datasets[0].data = chartDataBuffer[id];
+          charts[id].update('active');
+        }
       }
     });
   } catch (err) { console.error('Chart load error:', err); }
@@ -1376,10 +1514,29 @@ async function loadInitialChartData() {
     const sorted = rows.slice().reverse();
     
     CHART_CFG.forEach(cfg => {
-      const { id, key } = cfg;
-      chartDataBuffer[id] = sorted
-        .filter(r => r[key] !== null && r[key] !== undefined)
-        .map(r => ({ x: r.timestamp, y: r[key] }));
+      const { id, dual, multi } = cfg;
+      
+      if (dual) {
+        const { keys } = cfg;
+        chartDataBuffer[id][keys[0]] = sorted
+          .filter(r => r[keys[0]] !== null && r[keys[0]] !== undefined)
+          .map(r => ({ x: r.timestamp, y: r[keys[0]] }));
+        chartDataBuffer[id][keys[1]] = sorted
+          .filter(r => r[keys[1]] !== null && r[keys[1]] !== undefined)
+          .map(r => ({ x: r.timestamp, y: r[keys[1]] }));
+      } else if (multi) {
+        const { keys } = cfg;
+        keys.forEach(key => {
+          chartDataBuffer[id][key] = sorted
+            .filter(r => r[key] !== null && r[key] !== undefined)
+            .map(r => ({ x: r.timestamp, y: r[key] }));
+        });
+      } else {
+        const { key } = cfg;
+        chartDataBuffer[id] = sorted
+          .filter(r => r[key] !== null && r[key] !== undefined)
+          .map(r => ({ x: r.timestamp, y: r[key] }));
+      }
     });
   } catch (err) {
     console.warn('Initial chart data load failed:', err);

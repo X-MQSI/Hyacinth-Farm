@@ -104,12 +104,18 @@ async function initDatabase() {
   db.run(`CREATE TABLE IF NOT EXISTS sensor_data (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp    TEXT    NOT NULL,
+    soil_moisture_a REAL,
+    soil_moisture_b REAL,
+    light        REAL,
     temperature  REAL,
     humidity     REAL,
-    soil_moisture REAL,
     pressure     REAL,
-    light        REAL,
-    voltage      REAL,
+    solar_voltage REAL,
+    battery_voltage REAL,
+    supply_voltage REAL,
+    solar_current REAL,
+    battery_current REAL,
+    supply_current REAL,
     received_at  DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
@@ -291,33 +297,50 @@ app.get('/api/heartbeat', (req, res) => {
 });
 
 // ── POST /api/data ─────────────────────────────────────────────────────
-// Body (JSON): { timestamp, temperature, humidity, soil_moisture, pressure, light, voltage }
+// Body (JSON): { timestamp, soil_moisture_a, soil_moisture_b, light, temperature, humidity, pressure, solar_voltage, battery_voltage, supply_voltage, solar_current, battery_current, supply_current }
 // At least one numeric sensor field is required.
 app.post('/api/data', requireAuth, (req, res) => {
-  const { timestamp, temperature, humidity, soil_moisture, pressure, light, voltage } = req.body || {};
+  const { 
+    timestamp, soil_moisture_a, soil_moisture_b, light, 
+    temperature, humidity, pressure,
+    solar_voltage, battery_voltage, supply_voltage,
+    solar_current, battery_current, supply_current
+  } = req.body || {};
   const ts  = normalizeTimestamp(timestamp);
   const num = v => (typeof v === 'number' && isFinite(v) ? v : null);
 
-  const T  = num(temperature);
-  const H  = num(humidity);
-  const SM = num(soil_moisture);
-  const P  = num(pressure);
-  const L  = num(light);
-  const V  = num(voltage);
+  const SMA = num(soil_moisture_a);
+  const SMB = num(soil_moisture_b);
+  const L   = num(light);
+  const T   = num(temperature);
+  const H   = num(humidity);
+  const P   = num(pressure);
+  const SV  = num(solar_voltage);
+  const BV  = num(battery_voltage);
+  const SPV = num(supply_voltage);
+  const SC  = num(solar_current);
+  const BC  = num(battery_current);
+  const SPC = num(supply_current);
 
-  if ([T, H, SM, P, L, V].every(v => v === null)) {
+  if ([SMA, SMB, L, T, H, P, SV, BV, SPV, SC, BC, SPC].every(v => v === null)) {
     return sendError(res, 400, 'At least one numeric sensor field is required');
   }
 
   try {
     const id = dbRun(
-      `INSERT INTO sensor_data (timestamp, temperature, humidity, soil_moisture, pressure, light, voltage)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [ts, T, H, SM, P, L, V]
+      `INSERT INTO sensor_data (timestamp, soil_moisture_a, soil_moisture_b, light, temperature, humidity, pressure, solar_voltage, battery_voltage, supply_voltage, solar_current, battery_current, supply_current)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [ts, SMA, SMB, L, T, H, P, SV, BV, SPV, SC, BC, SPC]
     );
 
-    const record = { id, timestamp: ts, temperature: T, humidity: H, soil_moisture: SM, pressure: P, light: L, voltage: V };
-    const logLine = `[${ts}] T=${T ?? 'N/A'} H=${H ?? 'N/A'} SM=${SM ?? 'N/A'} P=${P ?? 'N/A'} L=${L ?? 'N/A'} V=${V ?? 'N/A'}`;
+    const record = { 
+      id, timestamp: ts, 
+      soil_moisture_a: SMA, soil_moisture_b: SMB, light: L,
+      temperature: T, humidity: H, pressure: P,
+      solar_voltage: SV, battery_voltage: BV, supply_voltage: SPV,
+      solar_current: SC, battery_current: BC, supply_current: SPC
+    };
+    const logLine = `[${ts}] SMA=${SMA ?? 'N/A'} SMB=${SMB ?? 'N/A'} L=${L ?? 'N/A'} T=${T ?? 'N/A'} H=${H ?? 'N/A'} P=${P ?? 'N/A'} SV=${SV ?? 'N/A'} BV=${BV ?? 'N/A'} SPV=${SPV ?? 'N/A'} SC=${SC ?? 'N/A'} BC=${BC ?? 'N/A'} SPC=${SPC ?? 'N/A'}`;
     appendLog(SENSOR_LOG, logLine);
     broadcast('data', record);
     res.json({ status: 'ok', id, timestamp: ts });

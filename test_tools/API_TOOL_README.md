@@ -19,12 +19,19 @@
    - 查询最新数据
    - 按时间范围查询
    
-   **支持的传感器字段：**
-   - 环境温度 (temperature)
-   - 土壤湿度 (soil_moisture)
+   **支持的传感器字段（12项）：**
+   - 土壤湿度A (soil_moisture_a)
+   - 土壤湿度B (soil_moisture_b)
    - 光照强度 (light)
-   - 大气压强 (pressure)
-   - 电池电压 (voltage)
+   - 环境温度 (temperature)
+   - 环境湿度 (humidity)
+   - 环境气压 (pressure)
+   - 太阳能电压 (solar_voltage)
+   - 电池电压 (battery_voltage)
+   - 供电电压 (supply_voltage)
+   - 太阳能电流 (solar_current)
+   - 电池电流 (battery_current)
+   - 供电电流 (supply_current)
 
 3. **事件接口** 🔔
    

@@ -98,11 +98,11 @@ hyacinth-farm/
 
 | 标签页   | 功能                                         |
 | ----- | ------------------------------------------ |
-| **首页** | 最新图像 + 实时传感器数据 + 最近5条设备事件 + 最新10条调试日志预览，通过 SSE 自动刷新 |
+| **首页** | 最新图像 + 实时传感器数据（12项） + 最近5条设备事件 + 最新10条调试日志预览，通过 SSE 自动刷新 |
 | **相册** | 历史照片浏览，按时间倒序排列，支持分页与全屏预览，支持左右切换图片                   |
-| **数据** | 环境温度、电池电压、光照强度、大气压强、土壤湿度历史折线图，默认显示1天数据，支持自定义时间范围查询，支持导出CSV        |
+| **数据** | 6个图表：土壤湿度A&B、光照强度、环境温度&湿度、环境气压、电压监控（太阳能/电池/供电）、电流监控（太阳能/电池/供电），默认显示1天数据，支持自定义时间范围查询，支持导出CSV        |
 | **事件** | 完整设备事件历史记录，最新事件显示在顶部，支持实时更新                |
-| **日志** | ESP32 调试信息实时显示，支持按级别过滤、自动滚动，最新日志显示在顶部                |
+| **日志** | ESP32 调试信息实时显示，支持按级别过滤、自动滚动，最新日志显示在顶部，系统自动保留最近500条日志                |
 
 ---
 
@@ -179,14 +179,21 @@ http.end();
 
 **请求体（JSON）**
 
-| 字段              | 类型     | 说明                            |
-| --------------- | ------ | ----------------------------- |
-| `timestamp`     | string | ISO 8601 时间戳（必须包含，由 ESP32 提供） |
-| `temperature`   | number | 环境温度（°C）                      |
-| `soil_moisture` | number | 土壤湿度（%）                       |
-| `pressure`      | number | 大气压强（kPa）                     |
-| `light`         | number | 光照强度（lx）                      |
-| `voltage`       | number | 电池电压（V）                       |
+| 字段                | 类型     | 说明                            |
+| ----------------- | ------ | ----------------------------- |
+| `timestamp`       | string | ISO 8601 时间戳（必须包含，由 ESP32 提供） |
+| `soil_moisture_a` | number | 土壤湿度A（%）                      |
+| `soil_moisture_b` | number | 土壤湿度B（%）                      |
+| `light`           | number | 光照强度（lx）                      |
+| `temperature`     | number | 环境温度（°C）                      |
+| `humidity`        | number | 环境湿度（%）                       |
+| `pressure`        | number | 环境气压（kPa）                     |
+| `solar_voltage`   | number | 太阳能电压（V）                      |
+| `battery_voltage` | number | 电池电压（V）                       |
+| `supply_voltage`  | number | 供电电压（V）                       |
+| `solar_current`   | number | 太阳能电流（mA）                     |
+| `battery_current` | number | 电池电流（mA）                      |
+| `supply_current`  | number | 供电电流（mA）                      |
 
 > 至少包含一个数值字段。
 
@@ -195,11 +202,18 @@ http.end();
 ```json
 {
   "timestamp": "2024-07-15T08:30:00.000Z",
-  "temperature": 22.5,
-  "soil_moisture": 43.8,
-  "pressure": 101.3,
+  "soil_moisture_a": 45.8,
+  "soil_moisture_b": 52.3,
   "light": 850,
-  "voltage": 3.7
+  "temperature": 22.5,
+  "humidity": 65.0,
+  "pressure": 101.3,
+  "solar_voltage": 5.2,
+  "battery_voltage": 3.7,
+  "supply_voltage": 5.0,
+  "solar_current": 120,
+  "battery_current": -50,
+  "supply_current": 200
 }
 ```
 

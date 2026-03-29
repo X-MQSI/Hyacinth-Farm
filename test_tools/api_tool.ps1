@@ -259,11 +259,18 @@ function Handle-Sensor {
                 Write-Title "Send Preset Sensor Data"
                 $data = @{
                     timestamp = Get-ISO8601Timestamp
-                    temperature = 22.5
-                    soil_moisture = 45.8
+                    soil_moisture_a = 45.8
+                    soil_moisture_b = 52.3
                     light = 850
+                    temperature = 22.5
+                    humidity = 65.0
                     pressure = 101.3
-                    voltage = 3.7
+                    solar_voltage = 5.2
+                    battery_voltage = 3.7
+                    supply_voltage = 5.0
+                    solar_current = 120
+                    battery_current = -50
+                    supply_current = 200
                 }
                 Invoke-ApiRequest -Method "POST" -Endpoint "/api/data" -Body $data
                 Wait-UserInput
@@ -273,19 +280,33 @@ function Handle-Sensor {
                 Write-Host "Enter values (leave empty for default):" -ForegroundColor $ColorInfo
                 Write-Host ""
                 
+                $soilA = Read-Host "Soil Moisture A (%) [45.0]"
+                $soilB = Read-Host "Soil Moisture B (%) [50.0]"
+                $light = Read-Host "Light (lx) [800]"
                 $temp = Read-Host "Temperature (C) [22.5]"
-                $soil = Read-Host "Soil Moisture (%) [45.0]"
-                $light = Read-Host "Light [800]"
+                $hum = Read-Host "Humidity (%) [65.0]"
                 $pres = Read-Host "Pressure (kPa) [101.3]"
-                $volt = Read-Host "Voltage (V) [3.7]"
+                $solarV = Read-Host "Solar Voltage (V) [5.0]"
+                $battV = Read-Host "Battery Voltage (V) [3.7]"
+                $supplyV = Read-Host "Supply Voltage (V) [5.0]"
+                $solarC = Read-Host "Solar Current (mA) [100]"
+                $battC = Read-Host "Battery Current (mA) [-50]"
+                $supplyC = Read-Host "Supply Current (mA) [200]"
                 
                 $data = @{
                     timestamp = Get-ISO8601Timestamp
-                    temperature = if ($temp) { [double]$temp } else { 22.5 }
-                    soil_moisture = if ($soil) { [double]$soil } else { 45.0 }
+                    soil_moisture_a = if ($soilA) { [double]$soilA } else { 45.0 }
+                    soil_moisture_b = if ($soilB) { [double]$soilB } else { 50.0 }
                     light = if ($light) { [double]$light } else { 800 }
+                    temperature = if ($temp) { [double]$temp } else { 22.5 }
+                    humidity = if ($hum) { [double]$hum } else { 65.0 }
                     pressure = if ($pres) { [double]$pres } else { 101.3 }
-                    voltage = if ($volt) { [double]$volt } else { 3.7 }
+                    solar_voltage = if ($solarV) { [double]$solarV } else { 5.0 }
+                    battery_voltage = if ($battV) { [double]$battV } else { 3.7 }
+                    supply_voltage = if ($supplyV) { [double]$supplyV } else { 5.0 }
+                    solar_current = if ($solarC) { [double]$solarC } else { 100 }
+                    battery_current = if ($battC) { [double]$battC } else { -50 }
+                    supply_current = if ($supplyC) { [double]$supplyC } else { 200 }
                 }
                 
                 Write-Host ""
@@ -579,11 +600,18 @@ function Run-FullTest {
     Write-Host "--- 3. Sensor Data API ---" -ForegroundColor $ColorInfo
     Test-Api -Name "POST /api/data" -Method "POST" -Endpoint "/api/data" -Body @{
         timestamp = Get-ISO8601Timestamp
-        temperature = 22.5
-        soil_moisture = 45.8
+        soil_moisture_a = 45.8
+        soil_moisture_b = 52.3
         light = 850
+        temperature = 22.5
+        humidity = 65.0
         pressure = 101.3
-        voltage = 3.7
+        solar_voltage = 5.2
+        battery_voltage = 3.7
+        supply_voltage = 5.0
+        solar_current = 120
+        battery_current = -50
+        supply_current = 200
     }
     Start-Sleep -Milliseconds 500
     Test-Api -Name "GET /api/data" -Method "GET" -Endpoint "/api/data?limit=5"
