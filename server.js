@@ -401,6 +401,17 @@ app.post('/api/log', requireAuth, (req, res) => {
       'INSERT INTO debug_logs (timestamp, level, message) VALUES (?, ?, ?)',
       [ts, lvl, message]
     );
+    
+    // 清理超过500条的旧日志
+    const countResult = dbAll('SELECT COUNT(*) as count FROM debug_logs');
+    const count = countResult[0].count;
+    if (count > 500) {
+      dbRun(
+        'DELETE FROM debug_logs WHERE id IN (SELECT id FROM debug_logs ORDER BY timestamp ASC LIMIT ?)',
+        [count - 500]
+      );
+    }
+    
     const record = { id, timestamp: ts, level: lvl, message };
     appendLog(DEBUG_LOG, `[${ts}] [${lvl}] ${message}`);
     broadcast('log', record);
