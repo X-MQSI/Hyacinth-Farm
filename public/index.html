@@ -1291,8 +1291,6 @@ function initCharts() {
       yScales.y = {
         type: 'linear',
         position: 'left',
-        min: mins[0],
-        max: maxs[0],
         ticks: { 
           color: colors[0], 
           font: { size: 11 },
@@ -1309,8 +1307,6 @@ function initCharts() {
       yScales.y1 = {
         type: 'linear',
         position: 'right',
-        min: mins[1],
-        max: maxs[1],
         ticks: { 
           color: colors[1], 
           font: { size: 11 },
@@ -1327,8 +1323,6 @@ function initCharts() {
     } else {
       // 单Y轴配置
       yScales.y = {
-        min: min,
-        max: max,
         ticks: { color: '#8b95b0', font: { size: 11 } },
         grid: { display: true, color: 'rgba(139, 149, 176, 0.1)' }
       };
