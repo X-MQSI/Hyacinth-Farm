@@ -1219,12 +1219,12 @@ document.addEventListener('keydown', e => {
 
 // ── Charts ────────────────────────────────────────────────────────────
 const CHART_CFG = [
-  { id: 'cSoil', keys: ['soil_moisture_a', 'soil_moisture_b'], colors: ['#4ade80', '#22c55e'], labels: ['土壤湿度A', '土壤湿度B'], unit: '%', min: 0, max: 110, dual: true },
-  { id: 'cLight', key: 'light', color: '#60a5fa', unit: 'lx', min: 0, max: 2000 },
-  { id: 'cEnv', keys: ['temperature', 'humidity'], colors: ['#f87171', '#60a5fa'], labels: ['环境温度', '环境湿度'], units: ['°C', '%'], mins: [-20, 0], maxs: [90, 110], dual: true },
-  { id: 'cPres', key: 'pressure', color: '#a78bfa', unit: 'kPa', min: 50, max: 150 },
+  { id: 'cSoil', keys: ['soil_moisture_a', 'soil_moisture_b'], colors: ['#22c55e', '#3b82f6'], labels: ['土壤湿度A', '土壤湿度B'], unit: '%', min: 0, max: 110, dual: true },
+  { id: 'cLight', key: 'light', color: '#60a5fa', label: '光照强度', unit: 'lx', min: 0, max: 2000 },
+  { id: 'cEnv', keys: ['temperature', 'humidity'], colors: ['#f87171', '#60a5fa'], labels: ['环境温度', '环境湿度'], units: ['°C', '%'], mins: [-20, 0], maxs: [80, 110], unit: '', dualAxis: true },
+  { id: 'cPres', key: 'pressure', color: '#a78bfa', label: '环境气压', unit: 'kPa', min: 50, max: 150 },
   { id: 'cVoltage', keys: ['solar_voltage', 'battery_voltage', 'supply_voltage'], colors: ['#fbbf24', '#f87171', '#60a5fa'], labels: ['太阳能电压', '电池电压', '供电电压'], unit: 'V', min: 0, max: 15, multi: true },
-  { id: 'cCurrent', keys: ['solar_current', 'battery_current', 'supply_current'], colors: ['#fbbf24', '#f87171', '#60a5fa'], labels: ['太阳能电流', '电池电流', '供电电流'], unit: 'mA', min: -500, max: 1500, multi: true },
+  { id: 'cCurrent', keys: ['solar_current', 'battery_current', 'supply_current'], colors: ['#fbbf24', '#f87171', '#60a5fa'], labels: ['太阳能电流', '电池电流', '供电电流'], unit: 'mA', min: -2000, max: 2000, multi: true },
 ];
 const charts = {};
 const chartDataBuffer = {
@@ -1251,30 +1251,123 @@ function makeAxis(color, min, max) {
 
 function initCharts() {
   CHART_CFG.forEach(cfg => {
-    const { id, key, color, unit, min, max } = cfg;
-    charts[id] = new Chart($(id), {
-      type: 'line',
-      data: {
-        datasets: [{
-          data: chartDataBuffer[id] || [],
-          borderColor: color,
+    const { id, key, keys, color, colors, label, labels, unit, units, min, max, mins, maxs, dual, multi, dualAxis } = cfg;
+    
+    // 构建数据集
+    let datasets = [];
+    if (dual || multi || dualAxis) {
+      // 多条线的图表
+      keys.forEach((k, idx) => {
+        datasets.push({
+          label: labels[idx],
+          data: chartDataBuffer[id][k] || [],
+          borderColor: colors[idx],
           backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 2,
           pointHoverRadius: 4,
           tension: 0.35,
-        }]
-      },
+          yAxisID: dualAxis ? (idx === 0 ? 'y' : 'y1') : 'y'
+        });
+      });
+    } else {
+      // 单条线的图表
+      datasets.push({
+        label: label || '',
+        data: chartDataBuffer[id] || [],
+        borderColor: color,
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        pointRadius: 2,
+        pointHoverRadius: 4,
+        tension: 0.35,
+      });
+    }
+    
+    // 构建Y轴配置
+    let yScales = {};
+    if (dualAxis) {
+      // 双Y轴配置（温度湿度图表）
+      yScales.y = {
+        type: 'linear',
+        position: 'left',
+        min: mins[0],
+        max: maxs[0],
+        ticks: { 
+          color: colors[0], 
+          font: { size: 11 },
+          callback: function(value) { return value + units[0]; }
+        },
+        grid: { display: true, color: 'rgba(139, 149, 176, 0.1)' },
+        title: {
+          display: true,
+          text: labels[0] + ' (' + units[0] + ')',
+          color: colors[0],
+          font: { size: 12, weight: 'bold' }
+        }
+      };
+      yScales.y1 = {
+        type: 'linear',
+        position: 'right',
+        min: mins[1],
+        max: maxs[1],
+        ticks: { 
+          color: colors[1], 
+          font: { size: 11 },
+          callback: function(value) { return value + units[1]; }
+        },
+        grid: { display: false },
+        title: {
+          display: true,
+          text: labels[1] + ' (' + units[1] + ')',
+          color: colors[1],
+          font: { size: 12, weight: 'bold' }
+        }
+      };
+    } else {
+      // 单Y轴配置
+      yScales.y = {
+        min: min,
+        max: max,
+        ticks: { color: '#8b95b0', font: { size: 11 } },
+        grid: { display: true, color: 'rgba(139, 149, 176, 0.1)' }
+      };
+    }
+    
+    charts[id] = new Chart($(id), {
+      type: 'line',
+      data: { datasets: datasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         animation: { duration: 250 },
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         plugins: {
-          legend: { display: false },
+          legend: { 
+            display: dual || multi || dualAxis,
+            position: 'top',
+            labels: {
+              color: '#8b95b0',
+              font: { size: 11 },
+              padding: 10,
+              usePointStyle: false,
+              boxWidth: 20,
+              boxHeight: 2
+            },
+            onClick: null
+          },
           tooltip: {
             callbacks: {
               title: ctx => fmtTs(ctx[0].raw.x),
-              label:  ctx => ` ${ctx.parsed.y.toFixed(2)} ${unit}`,
+              label: ctx => {
+                const datasetLabel = ctx.dataset.label || '';
+                const value = ctx.parsed.y !== null && ctx.parsed.y !== undefined ? ctx.parsed.y.toFixed(2) : 'N/A';
+                const unitStr = dualAxis ? (ctx.datasetIndex === 0 ? units[0] : units[1]) : (unit || '');
+                return ` ${datasetLabel}: ${value} ${unitStr}`;
+              }
             }
           }
         },
@@ -1285,12 +1378,7 @@ function initCharts() {
             ticks: { color: '#8b95b0', maxRotation: 0, font: { size: 11 } },
             grid: { display: false }
           },
-          y: {
-            min: min,
-            max: max,
-            ticks: { color: '#8b95b0', font: { size: 11 } },
-            grid: { display: false }
-          }
+          ...yScales
         }
       }
     });
@@ -1299,27 +1387,10 @@ function initCharts() {
 
 function updateChartsRealtime(data) {
   CHART_CFG.forEach(cfg => {
-    const { id, dual, multi } = cfg;
+    const { id, dual, multi, dualAxis } = cfg;
     
-    if (dual) {
-      // 双轴图表
-      const { keys } = cfg;
-      keys.forEach((key, idx) => {
-        if (data[key] !== null && data[key] !== undefined) {
-          const newPoint = { x: data.timestamp, y: data[key] };
-          mergeChartData(chartDataBuffer[id][key], newPoint);
-          
-          if (chartsReady && charts[id]) {
-            charts[id].data.datasets[idx].data = chartDataBuffer[id][key];
-          }
-        }
-      });
-      
-      if (chartsReady && charts[id]) {
-        charts[id].update('none');
-      }
-    } else if (multi) {
-      // 多线图表
+    if (dual || multi || dualAxis) {
+      // 多线图表（包括双轴）
       const { keys } = cfg;
       keys.forEach((key, idx) => {
         if (data[key] !== null && data[key] !== undefined) {
@@ -1435,27 +1506,10 @@ async function loadCharts() {
     const sorted = rows.slice().reverse();
     
     CHART_CFG.forEach(cfg => {
-      const { id, dual, multi } = cfg;
+      const { id, dual, multi, dualAxis } = cfg;
       
-      if (dual) {
-        // 双轴图表
-        const { keys } = cfg;
-        chartDataBuffer[id][keys[0]] = sorted
-          .filter(r => r[keys[0]] !== null && r[keys[0]] !== undefined)
-          .map(r => ({ x: r.timestamp, y: r[keys[0]] }))
-          .slice(-MAX_CHART_POINTS);
-        chartDataBuffer[id][keys[1]] = sorted
-          .filter(r => r[keys[1]] !== null && r[keys[1]] !== undefined)
-          .map(r => ({ x: r.timestamp, y: r[keys[1]] }))
-          .slice(-MAX_CHART_POINTS);
-        
-        if (charts[id]) {
-          charts[id].data.datasets[0].data = chartDataBuffer[id][keys[0]];
-          charts[id].data.datasets[1].data = chartDataBuffer[id][keys[1]];
-          charts[id].update('active');
-        }
-      } else if (multi) {
-        // 多线图表
+      if (dual || multi || dualAxis) {
+        // 多线图表（包括双轴）
         const { keys } = cfg;
         keys.forEach((key, idx) => {
           chartDataBuffer[id][key] = sorted
@@ -1514,17 +1568,9 @@ async function loadInitialChartData() {
     const sorted = rows.slice().reverse();
     
     CHART_CFG.forEach(cfg => {
-      const { id, dual, multi } = cfg;
+      const { id, dual, multi, dualAxis } = cfg;
       
-      if (dual) {
-        const { keys } = cfg;
-        chartDataBuffer[id][keys[0]] = sorted
-          .filter(r => r[keys[0]] !== null && r[keys[0]] !== undefined)
-          .map(r => ({ x: r.timestamp, y: r[keys[0]] }));
-        chartDataBuffer[id][keys[1]] = sorted
-          .filter(r => r[keys[1]] !== null && r[keys[1]] !== undefined)
-          .map(r => ({ x: r.timestamp, y: r[keys[1]] }));
-      } else if (multi) {
+      if (dual || multi || dualAxis) {
         const { keys } = cfg;
         keys.forEach(key => {
           chartDataBuffer[id][key] = sorted
