@@ -350,20 +350,50 @@ app.post('/api/data', requireAuth, (req, res) => {
 });
 
 // ── GET /api/data ──────────────────────────────────────────────────────
-// Query params: limit (default 200, max 1000), start (ISO), end (ISO)
+// Query params: limit (default 200, max 1000), start (ISO), end (ISO), downsample (optional)
 app.get('/api/data', (req, res) => {
   const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 200, 1000));
+  const downsample = parseInt(req.query.downsample) || 0; // 降采样间隔，0表示不降采样
   const conditions = [];
   const params     = [];
   if (req.query.start) { conditions.push('timestamp >= ?'); params.push(req.query.start); }
   if (req.query.end)   { conditions.push('timestamp <= ?'); params.push(req.query.end);   }
 
   const where = conditions.length ? ' WHERE ' + conditions.join(' AND ') : '';
-  params.push(limit);
 
   try {
-    const rows = dbAll(`SELECT * FROM sensor_data${where} ORDER BY timestamp DESC LIMIT ?`, params);
-    res.json(rows);
+    // 先查询总数
+    const countResult = dbAll(`SELECT COUNT(*) as count FROM sensor_data${where}`, params.slice(0, -1));
+    const totalCount = countResult[0].count;
+    
+    let rows;
+    if (downsample > 1 && totalCount > limit) {
+      // 需要降采样：使用ROW_NUMBER进行均匀采样
+      const sql = `
+        WITH numbered AS (
+          SELECT *, ROW_NUMBER() OVER (ORDER BY timestamp ASC) as rn
+          FROM sensor_data${where}
+        )
+        SELECT * FROM numbered 
+        WHERE (rn - 1) % ? = 0
+        ORDER BY timestamp DESC
+        LIMIT ?
+      `;
+      params.push(downsample);
+      params.push(limit);
+      rows = dbAll(sql, params);
+    } else {
+      // 不降采样，直接返回
+      params.push(limit);
+      rows = dbAll(`SELECT * FROM sensor_data${where} ORDER BY timestamp DESC LIMIT ?`, params);
+    }
+    
+    res.json({
+      data: rows,
+      total: totalCount,
+      downsampled: downsample > 1 && totalCount > limit,
+      downsampleRate: downsample
+    });
   } catch (err) {
     return sendError(res, 500, err.message);
   }

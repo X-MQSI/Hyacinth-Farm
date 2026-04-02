@@ -1041,7 +1041,8 @@ async function loadDashboard() {
   // Latest sensor
   try {
     const r = await fetch('/api/data?limit=1');
-    const rows = await r.json();
+    const result = await r.json();
+    const rows = result.data || result; // 兼容新旧接口格式
     if (rows.length) updateSensors(rows[0]);
   } catch (e) { console.warn('Dashboard sensor load:', e); }
 
@@ -1492,7 +1493,8 @@ function exportCSV() {
   
   fetch(url)
     .then(r => r.json())
-    .then(rows => {
+    .then(result => {
+      const rows = result.data || result; // 兼容新旧接口格式
       if (!rows.length) {
         alert('该时间段内没有数据');
         return;
@@ -1545,12 +1547,40 @@ function exportCSV() {
 async function loadCharts() {
   const s = $('chartStart').value;
   const e = $('chartEnd').value;
-  let url = '/api/data?limit=1000';
-  if (s) url += '&start=' + encodeURIComponent(new Date(s).toISOString());
-  if (e) url += '&end='   + encodeURIComponent(new Date(e).toISOString());
+  
+  // 第一步：先查询数据总数，判断是否需要降采样
+  let countUrl = '/api/data?limit=1';
+  if (s) countUrl += '&start=' + encodeURIComponent(new Date(s).toISOString());
+  if (e) countUrl += '&end='   + encodeURIComponent(new Date(e).toISOString());
+  
   try {
-    const rows   = await (await fetch(url)).json();
+    // 先获取数据总数
+    const countResponse = await fetch(countUrl);
+    const countData = await countResponse.json();
+    const totalCount = countData.total || 0;
+    
+    // 计算降采样率
+    const maxPoints = 1000;
+    let downsample = 1;
+    if (totalCount > maxPoints) {
+      downsample = Math.ceil(totalCount / maxPoints);
+    }
+    
+    // 第二步：使用降采样参数查询数据
+    let url = `/api/data?limit=${maxPoints}`;
+    if (s) url += '&start=' + encodeURIComponent(new Date(s).toISOString());
+    if (e) url += '&end='   + encodeURIComponent(new Date(e).toISOString());
+    if (downsample > 1) url += '&downsample=' + downsample;
+    
+    const response = await fetch(url);
+    const result = await response.json();
+    const rows = result.data || result; // 兼容新旧接口格式
     const sorted = rows.slice().reverse();
+    
+    // 如果进行了降采样，在控制台输出信息
+    if (result.downsampled) {
+      console.log(`数据已降采样: 总数据点 ${totalCount}, 降采样率 1/${downsample}, 显示 ${rows.length} 个数据点`);
+    }
     
     CHART_CFG.forEach(cfg => {
       const { id, dual, multi, dualAxis } = cfg;
@@ -1611,7 +1641,9 @@ function mergeChartData(existingData, newPoint) {
 async function loadInitialChartData() {
   // 页面加载时预加载最近的数据到缓冲区
   try {
-    const rows = await (await fetch('/api/data?limit=100')).json();
+    const response = await fetch('/api/data?limit=100');
+    const result = await response.json();
+    const rows = result.data || result; // 兼容新旧接口格式
     const sorted = rows.slice().reverse();
     
     CHART_CFG.forEach(cfg => {
